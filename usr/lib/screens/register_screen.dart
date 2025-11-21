@@ -35,7 +35,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       setState(() => _isLoading = false);
 
       if (success && mounted) {
-        Navigator.pushReplacementNamed(context, '/home');
+        // Navigate back to Home (which is now '/')
+        Navigator.popUntil(context, ModalRoute.withName('/'));
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Registration failed')),

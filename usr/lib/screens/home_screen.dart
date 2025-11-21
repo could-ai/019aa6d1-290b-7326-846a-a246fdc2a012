@@ -13,33 +13,55 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final authService = context.watch<AuthService>();
     final blogService = context.watch<BlogService>();
+    final isAuthenticated = authService.isAuthenticated;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('CouldAI Blog'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              authService.logout();
-              Navigator.pushReplacementNamed(context, '/');
-            },
-          ),
+          if (isAuthenticated)
+            IconButton(
+              icon: const Icon(Icons.logout),
+              tooltip: 'Logout',
+              onPressed: () {
+                authService.logout();
+                // No navigation needed, state change will rebuild UI
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Logged out successfully')),
+                );
+              },
+            )
+          else
+            TextButton.icon(
+              onPressed: () {
+                Navigator.pushNamed(context, '/login');
+              },
+              icon: const Icon(Icons.login, color: Colors.white),
+              label: const Text(
+                'Login',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: blogService.posts.length,
-        itemBuilder: (context, index) {
-          final post = blogService.posts[index];
-          return _BlogCard(post: post);
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushNamed(context, '/create-post');
-        },
-        child: const Icon(Icons.edit),
-      ),
+      body: blogService.posts.isEmpty
+          ? const Center(child: Text('No posts yet.'))
+          : ListView.builder(
+              itemCount: blogService.posts.length,
+              itemBuilder: (context, index) {
+                final post = blogService.posts[index];
+                return _BlogCard(post: post);
+              },
+            ),
+      floatingActionButton: isAuthenticated
+          ? FloatingActionButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/create-post');
+              },
+              tooltip: 'Create Post',
+              child: const Icon(Icons.edit),
+            )
+          : null, // Hide FAB if not authenticated
     );
   }
 }

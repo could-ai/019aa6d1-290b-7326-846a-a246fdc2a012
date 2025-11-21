@@ -32,7 +32,8 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() => _isLoading = false);
 
       if (success && mounted) {
-        Navigator.pushReplacementNamed(context, '/home');
+        // Navigate back to Home (which is now '/')
+        Navigator.popUntil(context, ModalRoute.withName('/'));
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Login failed')),
@@ -44,6 +45,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: const Text('Login')),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -96,7 +98,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 16),
                 TextButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, '/register');
+                    Navigator.pushReplacementNamed(context, '/register');
                   },
                   child: const Text('Don\'t have an account? Register'),
                 ),

@@ -40,8 +40,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final comments = context.watch<BlogService>().getCommentsForPost(widget.post.id);
-    final currentUser = context.watch<AuthService>().currentUser;
+    final authService = context.watch<AuthService>();
+    final currentUser = authService.currentUser;
     final isAuthor = currentUser?.id == widget.post.author.id;
+    final isAuthenticated = authService.isAuthenticated;
 
     return Scaffold(
       appBar: AppBar(
@@ -95,6 +97,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 16),
+                  if (comments.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 16.0),
+                      child: Text('No comments yet. Be the first to share your thoughts!'),
+                    ),
                   ListView.separated(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -125,37 +132,52 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               ),
             ),
           ),
-          Container(
-            padding: const EdgeInsets.all(8.0),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, -2),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _commentController,
-                    decoration: const InputDecoration(
-                      hintText: 'Write a comment...',
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16),
+          if (isAuthenticated)
+            Container(
+              padding: const EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, -2),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _commentController,
+                      decoration: const InputDecoration(
+                        hintText: 'Write a comment...',
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 16),
+                      ),
                     ),
                   ),
+                  IconButton(
+                    icon: const Icon(Icons.send, color: Colors.deepPurple),
+                    onPressed: _submitComment,
+                  ),
+                ],
+              ),
+            )
+          else
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16.0),
+              color: Colors.grey[100],
+              child: Center(
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/login');
+                  },
+                  child: const Text('Log in to leave a comment'),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.send, color: Colors.deepPurple),
-                  onPressed: _submitComment,
-                ),
-              ],
+              ),
             ),
-          ),
         ],
       ),
     );
